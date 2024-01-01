@@ -117,6 +117,120 @@ npm run release -- --first-release
 
 you can check version tag using `git tag` command
 
-#### References
+## Routing
+
+for routing we are using [React Router DOM](https://reactrouter.com/en/main), let's install
+
+```bash
+npm install react-router-dom --save
+npm install @types/react-router-dom --save-dev
+```
+
+Now implement following file system in your project
+
+```text
+📁 <project root>
+└📁 src
+  └📁 Routes
+    ├📁 Auth
+    │ └📄 AuthRouter.tsx
+    ├📁 Dashboard
+    │ └📄 DashboardRouter.tsx
+    ├📄 AppRouter.tsx
+    └📄 index.tsx
+```
+
+The content of these files are as following
+
+```typescript
+// <project root>/src/Routes/Auth/AuthRoutes.tsx
+import React from "react";
+import { Routes, Route } from "react-router-dom";
+
+const AuthRoutes = () => {
+    return (
+        <Routes>
+            <Route path="/"  element={<>AUTH</>} />
+            <Route path="/login"  element={<>AUTH-LOGIN</>} />
+            <Route path="/signup" element={<>AUTH-SIGNUP</>} />
+            <Route path="/forget" element={<>AUTH-FORGET</>} />
+            <Route path="/*" element={<>404</>} />
+        </Routes>
+    )
+}
+
+export default AuthRoutes;
+```
+
+```typescript
+// <project root>/src/Routes/Dashboard/DashboardRoutes
+import React from "react";
+import { Routes, Route } from "react-router-dom";
+
+const DashboardRoutes = () => {
+    return (
+        <Routes>
+            <Route path="/" element={<>DASHBOARD-INDEX</>} />
+            <Route path="/about" element={<>DASHBOARD-ABOUT</>} />
+            <Route path="/contact" element={<>DASHBOARD-CONTACT</>} />
+            <Route path="/*" element={<>404</>} />
+        </Routes>
+    )
+}
+
+export default DashboardRoutes;
+```
+
+```typescript
+// <project root>/src/Routes/index.tsx
+export { default as AppRouter } from './AppRouter';
+export { default as AuthRoutes } from './Auth/AuthRoutes';
+export { default as DashboardRoutes } from './Dashboard/DashboardRoutes';
+```
+
+```typescript
+// <project root>/src/Routes/AppRouter.tsx
+import React from "react";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { AuthRoutes, DashboardRoutes } from "../Routes";
+
+const AppRouter = () => {
+    return (
+        <BrowserRouter>
+            <Routes>
+                <Route path="/" element={<>HOME</>} />
+                <Route path="/auth/*" element={<AuthRoutes />} />
+                <Route path="/dashboard/*" element={<DashboardRoutes />} />
+                <Route path="/*" element={<>404</>} />
+            </Routes>
+        </BrowserRouter>
+    )
+}
+
+export default AppRouter;
+```
+
+once you created these files, modify `<project root>/src/index.tsx` file as following
+
+```typescript
+// <project root>/src/index.tsx
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import './index.css';
+import { AppRouter } from './Routes';
+
+const root = ReactDOM.createRoot(
+  document.getElementById('root') as HTMLElement
+);
+root.render(
+  <React.StrictMode>
+    <AppRouter />
+  </React.StrictMode>
+);
+```
+
+You can implement as many nested separate route files as you wish using this method.
+
+## References
 
 - [How To Automatically Generate A Helpful Changelog From Your Git Commit Messages](https://mokkapps.de/blog/how-to-automatically-generate-a-helpful-changelog-from-your-git-commit-messages)
