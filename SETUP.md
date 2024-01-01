@@ -147,7 +147,7 @@ The content of these files are as following
 import React from "react";
 import { Routes, Route } from "react-router-dom";
 
-const AuthRoutes = () => {
+const AuthRouter = () => {
     return (
         <Routes>
             <Route path="/"  element={<>AUTH</>} />
@@ -159,7 +159,7 @@ const AuthRoutes = () => {
     )
 }
 
-export default AuthRoutes;
+export default AuthRouter;
 ```
 
 ```typescript
@@ -167,7 +167,7 @@ export default AuthRoutes;
 import React from "react";
 import { Routes, Route } from "react-router-dom";
 
-const DashboardRoutes = () => {
+const DashboardRouter = () => {
     return (
         <Routes>
             <Route path="/" element={<>DASHBOARD-INDEX</>} />
@@ -178,29 +178,29 @@ const DashboardRoutes = () => {
     )
 }
 
-export default DashboardRoutes;
+export default DashboardRouter;
 ```
 
 ```typescript
 // <project root>/src/Routes/index.tsx
 export { default as AppRouter } from './AppRouter';
-export { default as AuthRoutes } from './Auth/AuthRoutes';
-export { default as DashboardRoutes } from './Dashboard/DashboardRoutes';
+export { default as AuthRouter } from './Auth/AuthRoutes';
+export { default as DashboardRouter } from './Dashboard/DashboardRoutes';
 ```
 
 ```typescript
 // <project root>/src/Routes/AppRouter.tsx
 import React from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { AuthRoutes, DashboardRoutes } from "../Routes";
+import { AuthRouter, DashboardRouter } from "../Routes";
 
 const AppRouter = () => {
     return (
         <BrowserRouter>
             <Routes>
                 <Route path="/" element={<>HOME</>} />
-                <Route path="/auth/*" element={<AuthRoutes />} />
-                <Route path="/dashboard/*" element={<DashboardRoutes />} />
+                <Route path="/auth/*" element={<AuthRouter />} />
+                <Route path="/dashboard/*" element={<DashboardRouter />} />
                 <Route path="/*" element={<>404</>} />
             </Routes>
         </BrowserRouter>

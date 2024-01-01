@@ -1,7 +1,7 @@
 import React from "react";
 import { Routes, Route } from "react-router-dom";
 
-const DashboardRoutes = () => {
+const DashboardRouter = () => {
     return (
         <Routes>
             <Route path="/" element={<>DASHBOARD-INDEX</>} />
@@ -12,4 +12,4 @@ const DashboardRoutes = () => {
     )
 }
 
-export default DashboardRoutes;
+export default DashboardRouter;

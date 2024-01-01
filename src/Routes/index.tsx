@@ -1,3 +1,3 @@
 export { default as AppRouter } from './AppRouter';
-export { default as AuthRoutes } from './Auth/AuthRoutes';
-export { default as DashboardRoutes } from './Dashboard/DashboardRoutes';
+export { default as AuthRouter } from './Auth/AuthRouter';
+export { default as DashboardRouter } from './Dashboard/DashboardRouter';
