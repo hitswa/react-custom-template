@@ -3,13 +3,20 @@ import ReactDOM from 'react-dom/client';
 import './index.css';
 import { AppRouter } from './Routes';
 import reportWebVitals from './reportWebVitals';
+import i18n from './Local/i18n';
+import { I18nextProvider } from 'react-i18next';
+import { LanguageProvider } from './Contexts';
 
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
 );
 root.render(
   <React.StrictMode>
-    <AppRouter />
+    <I18nextProvider i18n={i18n} defaultNS={'translation'}>
+      <LanguageProvider>
+        <AppRouter />
+      </LanguageProvider>
+    </I18nextProvider>
   </React.StrictMode>
 );
 
