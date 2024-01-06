@@ -4,7 +4,7 @@ import './index.css';
 import reportWebVitals from './reportWebVitals';
 import i18n from './Local/i18n';
 import { I18nextProvider } from 'react-i18next';
-import { LanguageProvider } from './Contexts';
+import { LanguageProvider, SchemeProvider } from './Contexts';
 import { BrowserRouter } from 'react-router-dom';
 import { LocalRouter } from './Routes';
 
@@ -16,7 +16,9 @@ root.render(
     <I18nextProvider i18n={i18n} defaultNS={'translation'}>
       <LanguageProvider>
         <BrowserRouter>
-          <LocalRouter />
+          <SchemeProvider>
+            <LocalRouter />
+          </SchemeProvider>
         </BrowserRouter>
       </LanguageProvider>
     </I18nextProvider>

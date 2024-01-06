@@ -795,6 +795,257 @@ root.render(
 );
 ```
 
+## Theming the project
+
+### Tailwind support
+
+install and initiate tailwind
+
+```bash
+npm install -D tailwindcss
+npx tailwindcss init
+```
+
+add add the paths to all of your template files in your `tailwind.config.js` file.
+
+```typescript
+/** @type {import('tailwindcss').Config} */
+module.exports = {
+  content: [
+    "./src/**/*.{js,jsx,ts,tsx,md,mdx}",
+  ],
+  theme: {
+    extend: {},
+  },
+  plugins: [],
+}
+```
+
+finally add the @tailwind directives for each of Tailwind's layers to your `/src/index.css` file.
+
+```css
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+```
+
+### Dark and Light Scheme
+
+add meta color-scheme tag in `index.html` file in public folder.
+
+```html
+<!-- public/index.html -->
+<head>
+  <meta name="color-scheme" content="dark light">
+</head>
+```
+
+add style code to `index.css` file
+
+```css
+/* <project-root>/src/index.css */
+:root {
+  --background-light: #f0f0f0;
+  --text-light: #333;
+
+  --background-dark: #333;
+  --text-dark: #f0f0f0;
+}
+
+:root.meta-dark {
+  --background-color: var(--background-dark);
+  --text-color: var(--text-dark);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not(.meta-dark) {
+    --background-color: var(--background-light);
+    --text-color: var(--text-light);
+  }
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: var(--background-light);
+  color: var(--text-light);
+}
+
+body {
+  background-color: var(--background-color);
+  color: var(--text-color);
+}
+```
+
+now create `SchemeContect.tsx` file
+
+```typescript
+// <project-root>/src/Contexts/SchemeContext.tsx
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+
+/**
+ * Type representing the color scheme of the application.
+ */
+export type Scheme = 'light' | 'dark';
+
+/**
+ * Props for the SchemeContextProvider component.
+ */
+interface ISchemeContext {
+  scheme: Scheme;
+  toggleScheme: () => void;
+}
+
+/**
+ * Context for managing the color scheme of the application.
+ */
+const SchemeContext = createContext<ISchemeContext | undefined>(undefined);
+
+/**
+ * Props for the SchemeProvider component.
+ */
+interface ISchemeProvider {
+    children: ReactNode | ReactNode[];
+}
+
+/**
+ * Provides the color scheme context to the application.
+ * @param children - The children components that will have access to the color scheme context.
+ */
+export const SchemeProvider: React.FC<ISchemeProvider> = ({ children }) => {
+  const [scheme, setScheme] = useState<Scheme>('light');
+  const metaTag = document.querySelector('meta[name="color-scheme"]');
+
+  useEffect(() => {
+    const systemScheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    setScheme(systemScheme);
+
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+
+    const handleSystemThemeChange = (e: MediaQueryListEvent) => {
+      setScheme(e.matches ? 'dark' : 'light');
+      document.documentElement.classList.toggle('meta-dark', e.matches);
+      if (metaTag) {
+          metaTag.setAttribute('content', systemScheme);
+      }
+    };
+
+    mediaQuery.addEventListener('change', handleSystemThemeChange);
+
+    // Update the meta tag content
+    document.documentElement.classList.toggle('meta-dark', systemScheme === 'dark');
+    if (metaTag) {
+      metaTag.setAttribute('content', systemScheme);
+    }
+
+    return () => {
+      mediaQuery.addEventListener('change', handleSystemThemeChange);
+    };
+  }, []);
+
+  /**
+   * Toggles the color scheme between light and dark.
+   */
+  const toggleScheme = () => {
+    const newScheme = scheme === 'light' ? 'dark' : 'light';
+    setScheme(newScheme);
+    document.documentElement.classList.toggle('meta-dark', newScheme === 'dark');
+    // Update the meta tag content
+    const metaTag = document.querySelector('meta[name="color-scheme"]');
+    if (metaTag) {
+      metaTag.setAttribute('content', newScheme);
+    }
+  };
+
+  return (
+    <SchemeContext.Provider value={{ scheme, toggleScheme }}>
+      {children}
+    </SchemeContext.Provider>
+  );
+};
+
+/**
+ * Hook to access the color scheme context.
+ * @returns The current color scheme and the toggle function.
+ * @throws An error if used outside of a SchemeProvider.
+ */
+export const useScheme = (): ISchemeContext => {
+  const context = useContext(SchemeContext);
+  if (!context) {
+    throw new Error('useScheme must be used within a SchemeProvider');
+  }
+  return context;
+};
+
+```
+
+add entry of `SchemeContect.tsx` in `<project-root>/src/Contexts/index.tsx` file
+
+```typescript
+// <project-root>/src/Contexts/index.tsx
+export { SchemeProvider, useScheme  } from './SchemeContext';
+```
+
+now wrap the main component in `src/index.tsx` file with SchemeProvider.
+
+```typescript
+// <project-root>/src/index.tsx
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import './index.css';
+import reportWebVitals from './reportWebVitals';
+import i18n from './Local/i18n';
+import { I18nextProvider } from 'react-i18next';
+import { LanguageProvider, SchemeProvider } from './Contexts';
+import { BrowserRouter } from 'react-router-dom';
+import { LocalRouter } from './Routes';
+
+const root = ReactDOM.createRoot(
+  document.getElementById('root') as HTMLElement
+);
+root.render(
+  <React.StrictMode>
+    <I18nextProvider i18n={i18n} defaultNS={'translation'}>
+      <LanguageProvider>
+        <BrowserRouter>
+          <SchemeProvider>
+            <LocalRouter />
+          </SchemeProvider>
+        </BrowserRouter>
+      </LanguageProvider>
+    </I18nextProvider>
+  </React.StrictMode>
+);
+```
+
+#### How scheme switcher will work?
+
+There are two way, one when system theme will change, it will change scheme accordingly. another way is by changing scheme manually and for this following is an example component SchemeSwitcher.tsx
+
+```typescript
+// <project-root>/src/Components/SchemeSwitcher.tsx
+import React from "react";
+import { useScheme } from "../Contexts";
+
+const SchemeSwitcher:React.FC = () => {
+    const { scheme, toggleScheme } = useScheme();
+    
+    return (
+        <div className={`app ${scheme}`}>
+            <h1>Responsive Theme Switcher</h1>
+            <p>Current Theme: {scheme}</p>
+            <button onClick={toggleScheme}>Toggle Theme</button>
+        </div>
+    )
+}
+
+export default SchemeSwitcher;
+```
+
 ## References
 
 - [How To Automatically Generate A Helpful Changelog From Your Git Commit Messages](https://mokkapps.de/blog/how-to-automatically-generate-a-helpful-changelog-from-your-git-commit-messages)
