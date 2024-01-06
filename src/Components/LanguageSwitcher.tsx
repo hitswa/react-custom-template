@@ -1,9 +1,9 @@
 import React, { ChangeEvent, useEffect, useState } from 'react';
-import { useLanguage } from '../../Contexts';
-import supportedLanguages from '../../Static/Language.json';
-import i18n from '../../Local/i18n';
+import { useLanguage } from '../Contexts';
+import supportedLanguages from '../Static/Language.json';
+import i18n from '../Local/i18n';
 
-import * as availableLanguage from '../../Local/languages/index';
+import * as availableLanguage from '../Local/languages/index';
 
 const arrAvailableLanguages = Object.keys(availableLanguage);
 
