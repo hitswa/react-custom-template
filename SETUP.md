@@ -392,6 +392,9 @@ const LanguageProvider: React.FC<LanguageProviderProps> = ({ children }) => {
     // Set the initial language on startup
     const currentLanguage = i18n.language;
     i18n.changeLanguage(currentLanguage);
+
+    // Set the lang attribute on the HTML element
+    document.documentElement.lang = currentLanguage;
   }, []);
 
   /**
@@ -681,6 +684,115 @@ to change language use following code and pass the language code in it.
 
 ```typescript
 i18n.changeLanguage('en-US');
+```
+
+## Adding language support to route (Optional)
+
+Create a file called `LocalRouter.tsx` in `<project-root>/src/Routes` folder
+
+```typescript
+// <project-root>/src/Routes/LocalRouter.tsx
+import React, { useEffect } from "react";
+import { Routes, Route, Navigate, useNavigate, useLocation } from "react-router-dom";
+import { AppRouter } from ".";
+import { useLanguage } from "../Contexts";
+import * as availableTranslationLanguage from "../Local/languages"
+
+const LocalRouter = () => {
+
+    let { language } = useLanguage();
+    
+    const navigate = useNavigate();
+    const location = useLocation();
+
+    // check and append language component to the route
+    useEffect(()=>{
+        let availableLanguage = Object.keys(availableTranslationLanguage);
+        let path = location?.pathname;          // get the path
+        let arrUrlParts = (path).split('/');    // splitting the path
+        let langPart = arrUrlParts[1];          // language part
+
+        if( !availableLanguage.includes(langPart) ) { // if language string is missing
+            navigate(`/${language}${path}`);
+        } else if( !availableLanguage.includes(langPart) && langPart!==language ) { // if language string is present but incorrect
+            navigate(`/${language}${path.substring(3)}`);
+        } else {
+            // everything is fine
+        }
+    },[])
+    
+
+    return (
+        <Routes>
+            <Route path="/" element={<Navigate replace to={`/${language}/`} />} />
+            <Route path="/:lang/*" element={<AppRouter />} />
+            <Route path="/*" element={<>404</>} />
+        </Routes>
+    )
+}
+
+export default LocalRouter;
+```
+
+add the entry of newly created `LocalRouter.tsx` file to `<project-root>/src/Routes/index.tsx` file shown below
+
+```typescript
+// <project-root>/src/Routes/index.tsx
+export { default as LocalRouter } from './LocalRouter';
+export { default as AppRouter } from './AppRouter';
+export { default as AuthRouter } from './Auth/AuthRouter';
+export { default as DashboardRouter } from './Dashboard/DashboardRouter';
+```
+
+modify `AppRouter.tsx` file and remove `<BrowserRouter>` and move it to `<project-root>/src/index.tsx` file showing below.
+
+```typescript
+// <project-root>/src/Routes/AppRouter.tsx
+import React from "react";
+import { Routes, Route } from "react-router-dom";
+import { AuthRouter, DashboardRouter } from "../Routes";
+
+const AppRouter = () => {
+    return (
+        <Routes>
+            <Route path="/" element={<>HOME</>} />
+            <Route path="/auth/*" element={<AuthRouter />} />
+            <Route path="/dashboard/*" element={<DashboardRouter />} />
+            <Route path="/*" element={<>404</>} />
+        </Routes>
+    );
+};
+
+export default AppRouter;
+```
+
+and following is updated content of `<project-root>/src/index.tsx` file
+
+```typescript
+// <project-root>/src/index.tsx
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import './index.css';
+import i18n from './Local/i18n';
+import { I18nextProvider } from 'react-i18next';
+import { LanguageProvider } from './Contexts';
+import { BrowserRouter } from 'react-router-dom';
+import { LocalRouter } from './Routes';
+
+const root = ReactDOM.createRoot(
+  document.getElementById('root') as HTMLElement
+);
+root.render(
+  <React.StrictMode>
+    <I18nextProvider i18n={i18n} defaultNS={'translation'}>
+      <LanguageProvider>
+        <BrowserRouter>
+          <LocalRouter />
+        </BrowserRouter>
+      </LanguageProvider>
+    </I18nextProvider>
+  </React.StrictMode>
+);
 ```
 
 ## References

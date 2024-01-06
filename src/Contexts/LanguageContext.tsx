@@ -35,6 +35,9 @@ const LanguageProvider: React.FC<LanguageProviderProps> = ({ children }) => {
     // Set the initial language on startup
     const currentLanguage = i18n.language;
     i18n.changeLanguage(currentLanguage);
+
+    // Set the lang attribute on the HTML element
+    document.documentElement.lang = currentLanguage;
   }, []);
 
   /**
