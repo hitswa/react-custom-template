@@ -16,7 +16,7 @@ interface ISchemeContext {
 /**
  * Context for managing the color scheme of the application.
  */
-const SchemeContext = createContext<ISchemeContext | undefined>(undefined);
+export const SchemeContext = createContext<ISchemeContext | undefined>(undefined);
 
 /**
  * Props for the SchemeProvider component.
