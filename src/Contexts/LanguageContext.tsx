@@ -38,6 +38,11 @@ const LanguageProvider: React.FC<LanguageProviderProps> = ({ children }) => {
 
     // Set the lang attribute on the HTML element
     document.documentElement.lang = currentLanguage;
+
+    // Update the direction of the HTML element based on language
+    // Arabic [ar], Aramaic, Azeri, Dhivehi/Maldivian [dv], Hebrew [he], Kurdish (Sorani) [ku], Persian/Farsi [fa], Urdu [ur]
+    const isRTL = ['ar','dv','he','ku','fa','ur'].includes(currentLanguage);
+    document.documentElement.dir = isRTL === true ? 'rtl' : 'ltr'; // i18n.dir();
   }, []);
 
   /**
@@ -46,6 +51,11 @@ const LanguageProvider: React.FC<LanguageProviderProps> = ({ children }) => {
    */
   const changeLanguage = (lang: string) => {
     i18n.changeLanguage(lang);
+
+    // Update the direction of the HTML element based on language
+    // Arabic [ar], Aramaic, Azeri, Dhivehi/Maldivian [dv], Hebrew [he], Kurdish (Sorani) [ku], Persian/Farsi [fa], Urdu [ur]
+    const isRTL = ['ar','dv','he','ku','fa','ur'].includes(lang);
+    document.documentElement.dir = isRTL === true ? 'rtl' : 'ltr'; // i18n.dir();
   };
 
   return (
