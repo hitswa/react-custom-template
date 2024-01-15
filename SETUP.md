@@ -1046,6 +1046,351 @@ const SchemeSwitcher:React.FC = () => {
 export default SchemeSwitcher;
 ```
 
+### Theme colors
+
+Theme color setup happen in such a way that it will effect application on real time. There are two options set one via predefined colors another is via real time change or via pre defined settings.
+
+Now, create file and folder structure as shown below.
+
+```text
+📁 <project-root>
+└📁 src
+  ├📄 index.tsx <-- already exists
+  ├📁 Components
+  │  └📄 ThemeSwitcher.tsx
+  ├📁 Contexts
+  │     ├📄 index.tsx <== already exists
+  │     └📄 ThemeContext.tsx
+  └📁 Static
+     └📄 Theme.json
+```
+
+Following are the content of the files
+
+```typescript
+// <project-root>/src/Contexts/ThemeContext.tsx
+
+import React, { createContext, useContext, useState, useEffect, useMemo, ReactNode, useRef } from 'react';
+
+/**
+ * Interface defining the shape of the theme.
+ * @typedef {Object} Theme
+ * @property {string} primaryColor - The primary theme color.
+ * @property {string} secondaryColor - The secondary theme color.
+ */
+interface Theme {
+  primaryColor: string;
+  secondaryColor: string;
+  // Add more theme variables as needed
+}
+
+/**
+ * Initial theme values.
+ */
+const interfaceColorTheme: Theme = {
+  primaryColor: '#3490dc',
+  secondaryColor: '#ffed4a',
+  // Initialize more theme variables with default values
+};
+
+/**
+ * Type defining the shape of the context value for the theme.
+ * @typedef {Object} ThemeContextType
+ * @property {Theme} theme - Theme values
+ * @property {React.Dispatch<React.SetStateAction<Theme>>} setTheme
+ */
+interface ThemeContextType {
+  theme: Theme;
+  setTheme: React.Dispatch<React.SetStateAction<Theme>>;
+}
+
+/**
+ * Context for managing the theme.
+ * @type {React.Context<ThemeContextType | undefined>}
+ */
+export const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
+
+/**
+ * Props for the ThemeProvider component.
+ * @typedef {Object} ThemeProviderProps
+ * @property {ReactNode} children - Child components to be wrapped by the ThemeProviderProps.
+ */
+interface ThemeProviderProps {
+  children: ReactNode;
+}
+
+/**
+ * ThemeProvider component to manage the theme context.
+ * @param {ThemeProviderProps} props - The component props.
+ * @returns {React.FC} - The ThemeProvider component.
+ */
+export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
+  /**
+   * State to manage the current theme.
+   */
+  const [theme, setTheme] = useState<Theme>(interfaceColorTheme);
+
+  /**
+   * Memoized context value to avoid unnecessary re-renders.
+   */
+  const memoizedValue = useMemo(() => ({ theme, setTheme }), [theme, setTheme]);
+
+  /**
+   * Memoized style tag string with dynamic CSS variables.
+   */
+  const styleTag = useMemo(() => {
+    return `
+      :root {
+        --primary-color: ${theme.primaryColor};
+        --secondary-color: ${theme.secondaryColor};
+        // Add more CSS variables as needed
+      }
+      .bg-custom-primary {
+        background-color: var(--primary-color)
+      }
+      .text-custom-primary {
+        color: var(--primary-color)
+      }
+      .bg-custom-secondary {
+        background-color: var(--secondary-color)
+      }
+      .text-custom-secondary {
+        color: var(--secondary-color)
+      }
+      // you may add more classes to be use while developing actual theme
+    `;
+  }, [theme]);
+
+  /**
+   * Ref to track whether the style tag has been added.
+   */
+  const styleTagAdded = useRef<boolean>(false);
+
+  /**
+   * Effect to update the style tag in the index.html dynamically.
+   */
+  useEffect(() => {
+    if (!styleTagAdded.current) {
+      const newStyleTag = document.createElement('style');
+      newStyleTag.id = 'global-theme-style';
+      newStyleTag.innerHTML = styleTag;
+      document.head.appendChild(newStyleTag);
+      styleTagAdded.current = true;
+    } else {
+      const existingStyleTag = document.getElementById('global-theme-style');
+      if (existingStyleTag) {
+        existingStyleTag.innerHTML = styleTag;
+      }
+    }
+  }, [styleTag]);
+
+  return (
+    <ThemeContext.Provider value={memoizedValue}>
+      {children}
+    </ThemeContext.Provider>
+  );
+};
+
+/**
+ * Custom hook for using the theme context.
+ * @returns {ThemeContextType} - The context value for the theme.
+ * @throws {Error} - Throws an error if used outside a ThemeProvider.
+ */
+export const useTheme = () => {
+  const context = useContext(ThemeContext);
+
+  if (!context) {
+    throw new Error('useTheme must be used within a ThemeProvider');
+  }
+
+  return context;
+};
+
+```
+
+```typescript
+// <project-root>/src/Contexts/index.tsx
+...
+export { ThemeContext, ThemeProvider, useTheme } from './ThemeContext';
+```
+
+```json
+// <project-root>/src/Static/Theme.json
+[
+    {
+        "name": "Theme 1",
+        "colors": {
+            "primary": "#02343F",
+            "secondary": "#F0EDCC"
+        }
+    },
+    {
+        "name": "Theme 2",
+        "colors": {
+            "primary": "#331B3F",
+            "secondary": "#ACC7B4"
+        }
+    },
+    {
+        "name": "Theme 3",
+        "colors": {
+            "primary": "#07553B",
+            "secondary": "#CED46A"
+        }
+    }
+]
+```
+
+```typescript
+// <project-root>/src/index.tsx
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import './index.css';
+import reportWebVitals from './reportWebVitals';
+import i18n from './Local/i18n';
+import { I18nextProvider } from 'react-i18next';
+import { LanguageProvider, SchemeProvider, ThemeProvider } from './Contexts';
+import { BrowserRouter } from 'react-router-dom';
+import { LocalRouter } from './Routes';
+const root = ReactDOM.createRoot(
+  document.getElementById('root') as HTMLElement
+);
+root.render(
+  <React.StrictMode>
+    <I18nextProvider i18n={i18n} defaultNS={'translation'}>
+      <LanguageProvider>
+        <BrowserRouter>
+          <SchemeProvider>
+            <ThemeProvider>
+              <LocalRouter />
+            </ThemeProvider>
+          </SchemeProvider>
+        </BrowserRouter>
+      </LanguageProvider>
+    </I18nextProvider>
+  </React.StrictMode>
+);
+
+// If you want to start measuring performance in your app, pass a function
+// to log results (for example: reportWebVitals(console.log))
+// or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
+reportWebVitals();
+```
+
+and here is the example component to change theme
+
+```typescript
+// <project-root>/src/Components/ThemeSwitcher.tsx
+import React from "react";
+import { useTheme } from "../Contexts";
+import predefinedThemes from "../Static/Theme.json"
+
+const ThemeSwitcher = () => {
+    const { theme, setTheme } = useTheme();
+
+    return (
+        <div className="bg-custom-primary text-custom-secondary">
+            <div className="flex gap-4">
+                <button
+                    className="border border-gray-500 px-4 py-1 rounded-full"
+                    onClick={()=>{
+                        let currentTheme = predefinedThemes.find( t => t.name === 'Theme 1' )
+                        setTheme(()=>{
+                            return {
+                                primaryColor: currentTheme?.colors?.primary || '',
+                                secondaryColor: currentTheme?.colors?.secondary || ''
+                            }
+                        })
+                    }}
+                >
+                    Theme1
+                </button>
+                <button
+                    className="border border-gray-500 px-4 py-1 rounded-full"
+                    onClick={()=>{
+                        let currentTheme = predefinedThemes.find( t => t.name === 'Theme 2' )
+                        setTheme(()=>{
+                            return {
+                                primaryColor: currentTheme?.colors?.primary || '',
+                                secondaryColor: currentTheme?.colors?.secondary || ''
+                            }
+                        })
+                    }}
+                >
+                    Theme2
+                </button>
+                <button
+                    className="border border-gray-500 px-4 py-1 rounded-full"
+                    onClick={()=>{
+                        let currentTheme = predefinedThemes.find( t => t.name === 'Theme 3' )
+                        setTheme(()=>{
+                            return {
+                                primaryColor: currentTheme?.colors?.primary || '',
+                                secondaryColor: currentTheme?.colors?.secondary || ''
+                            }
+                        })
+                    }}
+                >
+                    Theme3
+                </button>
+            </div>
+            <div className="flex gap-2">
+                <label>
+                    <div className="text-lg font-medium">Select Primary Color:</div>
+                    <div className="flex items-center border border-gray-500 w-fit bg-slate-100 px-2 rounded-md">
+                        <input 
+                            type="text"
+                            value={theme.primaryColor}
+                            className="bg-slate-100 h-8 outline-none uppercase text-custom-primary"
+                            readOnly
+                        />
+                        <input 
+                            type="color"
+                            value={theme.primaryColor}
+                            onChange={(e)=>{
+                                setTheme((prevTheme)=>{
+                                    return {
+                                        ...prevTheme,
+                                        primaryColor: e.target.value
+                                    }
+                                })
+                            }}
+                            className="w-6"
+                        />
+                    </div>
+                </label>
+                <label>
+                    <div className="text-lg font-medium">Select Secondary Color:</div>
+                    <div className="flex items-center border border-gray-500 w-fit bg-slate-100 px-2 rounded-md">
+                        <input 
+                            type="text"
+                            value={theme.secondaryColor}
+                            className="bg-slate-100 h-8 outline-none uppercase text-custom-secondary"
+                            readOnly
+                        />
+                        <input 
+                            type="color"
+                            value={theme.secondaryColor}
+                            onChange={(e)=>{
+                                setTheme((prevTheme)=>{
+                                    return {
+                                        ...prevTheme,
+                                        secondaryColor: e.target.value
+                                    }
+                                })
+                            }}
+                            className="w-6"
+                        />
+                    </div>
+                </label>
+            </div>
+        </div>
+    )
+}
+
+export default ThemeSwitcher;
+```
+
 ## References
 
 - [How To Automatically Generate A Helpful Changelog From Your Git Commit Messages](https://mokkapps.de/blog/how-to-automatically-generate-a-helpful-changelog-from-your-git-commit-messages)

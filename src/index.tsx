@@ -4,10 +4,9 @@ import './index.css';
 import reportWebVitals from './reportWebVitals';
 import i18n from './Local/i18n';
 import { I18nextProvider } from 'react-i18next';
-import { LanguageProvider, SchemeProvider } from './Contexts';
+import { LanguageProvider, SchemeProvider, ThemeProvider } from './Contexts';
 import { BrowserRouter } from 'react-router-dom';
 import { LocalRouter } from './Routes';
-
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
 );
@@ -17,7 +16,9 @@ root.render(
       <LanguageProvider>
         <BrowserRouter>
           <SchemeProvider>
-            <LocalRouter />
+            <ThemeProvider>
+              <LocalRouter />
+            </ThemeProvider>
           </SchemeProvider>
         </BrowserRouter>
       </LanguageProvider>

@@ -1,0 +1,23 @@
+[
+    {
+        "name": "Theme 1",
+        "colors": {
+            "primary": "#02343F",
+            "secondary": "#F0EDCC"
+        }
+    },
+    {
+        "name": "Theme 2",
+        "colors": {
+            "primary": "#331B3F",
+            "secondary": "#ACC7B4"
+        }
+    },
+    {
+        "name": "Theme 3",
+        "colors": {
+            "primary": "#07553B",
+            "secondary": "#CED46A"
+        }
+    }
+]
